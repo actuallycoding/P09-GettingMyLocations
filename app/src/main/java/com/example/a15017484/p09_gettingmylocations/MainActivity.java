@@ -1,12 +1,16 @@
 package com.example.a15017484.p09_gettingmylocations;
 
+import android.content.Intent;
 import android.location.Location;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.PermissionChecker;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +20,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationServices;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -24,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements
     private Location mLocation;
     TextView tvLat, tvLong;
     Button btnStart, btnStop, btnCheck;
+    String folderLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +49,58 @@ public class MainActivity extends AppCompatActivity implements
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        folderLocation = Environment.getExternalStorageDirectory().getAbsolutePath() + "/location";
+        File folder = new File(folderLocation);
+        if (folder.exists() == false) {
+            boolean result = folder.mkdir();
+            if (result == true) {
+                Log.d("File Read/Write", "Folder created");
+            }
+        }
+
+        btnCheck.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                File targetFile = new File(folderLocation, "data.txt");
+
+                if (targetFile.exists() == true) {
+                    String data = "";
+                    try {
+                        FileReader reader = new FileReader(targetFile);
+                        BufferedReader br = new BufferedReader(reader);
+                        String line = br.readLine();
+                        while (line != null) {
+                            data += line + "\n";
+                            line = br.readLine();
+                        }
+                        br.close();
+                        reader.close();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Failed to read!",
+                                Toast.LENGTH_LONG).show();
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(MainActivity.this, data, Toast.LENGTH_LONG).show();
+                }
+
+            }
+        });
+        btnStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, MyService.class);
+                startService(i);
+            }
+        });
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this, MyService.class);
+                stopService(i);
+            }
+        });
     }
 
     @Override
@@ -61,8 +122,8 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (mLocation != null) {
-            tvLat.append("" + mLocation.getLatitude());
-            tvLong.append("" + mLocation.getLongitude());
+            tvLat.setText("Latitude : " + mLocation.getLatitude());
+            tvLong.setText("Longitude : " + mLocation.getLongitude());
         } else {
             Toast.makeText(this, "Location not Detected",
                     Toast.LENGTH_SHORT).show();
