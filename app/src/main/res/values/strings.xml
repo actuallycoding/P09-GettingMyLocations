@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">P09-GettingMyLocations</string>
+    <string name="text">Last known location when this Activity started :</string>
+    <string name="lat">Latitude :</string>
+    <string name="longi">Longitude :</string>
+    <string name="start">Start Detector</string>
+    <string name="stop">Stop Detector</string>
+    <string name="check">Check Records</string>
+</resources>
